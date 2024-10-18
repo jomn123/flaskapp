@@ -1,14 +1,14 @@
-    from flask import Flask, jsonify
+from flask import Flask, jsonify
 
-    app = Flask(__name__)
+app = Flask(__name__)
 
-    @app.route('/')
-    def hello():
-        return jsonify({"message": "Hello, IEEE!"})
+@app.route('/')
+def hello():
+    return jsonify({"message": "Hello, IEEE!"})
 
-    @app.route('/greet/<name>')
-    def greet(name):
-        return jsonify({"message": f"Hello, {name}!"})
+@app.route('/greet/<name>')
+def greet(name):
+    return jsonify({"message": f"Hello, {name}!"})
 
-    if __name__ == '__main__':
-        app.run(host='0.0.0.0', port=5000)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
