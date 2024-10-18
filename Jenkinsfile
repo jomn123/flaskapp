@@ -1,20 +1,24 @@
 pipeline {
     agent any
     
+    environment {
+        APP_NAME = "myapp"
+        DOCKER_IMAGE = "${APP_NAME}:${BUILD_NUMBER}"
+    }
+    
     stages {
         stage('Build') {
             steps {
-                script {
-                    docker.build("myapp:${BUILD_NUMBER}")
-                }
+                sh "docker build -t ${DOCKER_IMAGE} ."
             }
         }
         
         stage('Test') {
             steps {
                 script {
-                    docker.image("myapp:${BUILD_NUMBER}").inside {
-                        sh 'python -m unittest discover tests'
+                    def testResult = sh(script: "docker run --rm ${DOCKER_IMAGE} python -m unittest discover tests", returnStatus: true)
+                    if (testResult != 0) {
+                        error "Tests failed!"
                     }
                 }
             }
@@ -22,21 +26,22 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                script {
-                    docker.image("myapp:${BUILD_NUMBER}").withRun('-p 5000:5000') { c ->
-                        // The container is now running. You can perform additional steps here if needed.
-                        sh 'echo "Application deployed on port 5000"'
-                    }
-                }
+                sh """
+                    docker stop ${APP_NAME} || true
+                    docker rm ${APP_NAME} || true
+                    docker run -d -p 5000:5000 --name ${APP_NAME} ${DOCKER_IMAGE}
+                """
             }
         }
     }
     
     post {
         always {
-            script {
-                sh "docker rmi myapp:${BUILD_NUMBER} || true"
-            }
+            sh """
+                docker stop ${APP_NAME} || true
+                docker rm ${APP_NAME} || true
+                docker rmi ${DOCKER_IMAGE} || true
+            """
         }
     }
 }

@@ -1,21 +1,18 @@
-version: '3.8'
-
+version: '3'
 services:
   jenkins:
     image: jenkins/jenkins:lts
     privileged: true
     user: root
     ports:
-      - "8080:8080"
-      - "50000:50000"
+      - 8080:8080
+      - 50000:50000
+    container_name: jenkins
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - DOCKER_HOST=unix:///var/run/docker.sock
-    networks:
-      - jenkins_network
-
+      - /usr/local/bin/docker:/usr/local/bin/docker
+    
   dind:
     image: docker:dind
     privileged: true
@@ -23,11 +20,10 @@ services:
       DOCKER_TLS_CERTDIR: ""
     volumes:
       - jenkins_home:/var/jenkins_home
-    networks:
-      - jenkins_network
-
-networks:
-  jenkins_network:
-
+    
 volumes:
   jenkins_home:
+
+
+
+  username youssf
