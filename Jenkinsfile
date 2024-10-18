@@ -1,35 +1,42 @@
 pipeline {
-    agent {
-        docker {
-            image 'docker:latest'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    agent any
     
     stages {
         stage('Build') {
             steps {
-                sh 'docker build -t myapp:${BUILD_NUMBER} .'
+                script {
+                    docker.build("myapp:${BUILD_NUMBER}")
+                }
             }
         }
         
         stage('Test') {
             steps {
-                sh 'docker run --rm myapp:${BUILD_NUMBER} python -m unittest discover tests'
+                script {
+                    docker.image("myapp:${BUILD_NUMBER}").inside {
+                        sh 'python -m unittest discover tests'
+                    }
+                }
             }
         }
         
         stage('Deploy') {
             steps {
-                sh 'docker run -d -p 5000:5000 --name myapp_${BUILD_NUMBER} myapp:${BUILD_NUMBER}'
+                script {
+                    docker.image("myapp:${BUILD_NUMBER}").withRun('-p 5000:5000') { c ->
+                        // The container is now running. You can perform additional steps here if needed.
+                        sh 'echo "Application deployed on port 5000"'
+                    }
+                }
             }
         }
     }
     
     post {
         always {
-            sh 'docker stop myapp_${BUILD_NUMBER} || true'
-            sh 'docker rm myapp_${BUILD_NUMBER} || true'
+            script {
+                sh "docker rmi myapp:${BUILD_NUMBER} || true"
+            }
         }
     }
 }
