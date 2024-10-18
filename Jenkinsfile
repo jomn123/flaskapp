@@ -16,7 +16,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    def testResult = sh(script: "docker run --rm ${DOCKER_IMAGE} python -m unittest discover tests", returnStatus: true)
+                    def testResult = sh(script: "docker run --rm ${DOCKER_IMAGE} sh -c 'cd /app && python -m unittest discover -v tests'", returnStatus: true)
                     if (testResult != 0) {
                         error "Tests failed!"
                     }
