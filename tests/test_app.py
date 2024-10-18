@@ -9,7 +9,7 @@ class TestApp(unittest.TestCase):
         response = self.client.get('/')
         data = response.get_json()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['message'], 'Hello, IEEE!')
+        self.assertEqual(data['message'], 'Hello, omar!')
 
     def test_greet(self):
         response = self.client.get('/greet/Alice')
